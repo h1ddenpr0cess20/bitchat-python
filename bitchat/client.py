@@ -463,6 +463,16 @@ class BitchatClient:
             relay_data = bytearray(raw_data)
             relay_data[2] = packet.ttl - 1
             await self.send_packet(bytes(relay_data))
+
+    async def handle_key_exchange(self, packet: BitchatPacket):
+        """Handle incoming key exchange message"""
+        debug_println(f"[CRYPTO] Received key exchange from {packet.sender_id_str}")
+        try:
+            self.encryption_service.process_combined_public_key_data(
+                packet.sender_id_str, packet.payload
+            )
+        except EncryptionError as e:
+            debug_println(f"[CRYPTO] Failed to process key exchange: {e}")
     
 
     

@@ -52,15 +52,27 @@ class EncryptionService:
             format=serialization.PublicFormat.Raw
         ))
         return bytes(data)
-    
 
-        
+    def process_combined_public_key_data(self, peer_id: str, data: bytes) -> None:
+        """Process a peer's combined public key data and derive shared secret."""
+        if len(data) != 96:
+            raise EncryptionError("Invalid key data length")
+
+        public_key_bytes = data[0:32]
+        signing_key_bytes = data[32:64]
+        identity_key_bytes = data[64:96]
+
+        try:
+            public_key = X25519PublicKey.from_public_bytes(public_key_bytes)
+        except Exception:
+            raise EncryptionError("Invalid public key")
+
         # Parse Ed25519 signing key
         try:
             signing_key = ed25519.Ed25519PublicKey.from_public_bytes(signing_key_bytes)
         except Exception:
             raise EncryptionError("Invalid signing key")
-        
+
         # Parse identity key with Android compatibility
         try:
             identity_key = ed25519.Ed25519PublicKey.from_public_bytes(identity_key_bytes)
@@ -68,25 +80,25 @@ class EncryptionService:
             # Android bug compatibility
             print(f"[CRYPTO] Note: Peer {peer_id} appears to be Android (invalid identity key format)")
             identity_key = signing_key
-        
+
         # Store keys
         self.peer_public_keys[peer_id] = public_key
         self.peer_signing_keys[peer_id] = signing_key
         self.peer_identity_keys[peer_id] = identity_key
-        
+
         # Generate shared secret
         shared_secret = self.private_key.exchange(public_key)
-        
+
         # Derive symmetric key using HKDF
         hkdf = HKDF(
             algorithm=hashes.SHA256(),
             length=32,
             salt=b"bitchat-v1",
             info=b"",
-            backend=default_backend()
+            backend=default_backend(),
         )
         symmetric_key = hkdf.derive(shared_secret)
-        
+
         self.shared_secrets[peer_id] = symmetric_key
         print(f"[CRYPTO] Successfully established shared secret with {peer_id}")
     
