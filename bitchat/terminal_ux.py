@@ -218,7 +218,7 @@ def print_help():
     # General
     print("\033[38;5;40m▶ General\033[0m")
     print("  \033[36m/help\033[0m         Show this help menu")
-    print("  \033[36m/name\033[0m \033[90m<name>\033[0m  Change your nickname")
+    print("  \033[36m/nick\033[0m \033[90m<name>\033[0m  Change your nickname")
     print("  \033[36m/status\033[0m       Show connection info")
     print("  \033[36m/clear\033[0m        Clear the screen")
     print("  \033[36m/exit\033[0m         Quit BitChat\n")
@@ -233,8 +233,8 @@ def print_help():
     # Messaging
     print("\033[38;5;40m▶ Messaging\033[0m")
     print("  \033[90m(type normally to send in current mode)\033[0m")
-    print("  \033[36m/dm\033[0m \033[90m<name>\033[0m    Start private conversation")
-    print("  \033[36m/dm\033[0m \033[90m<name> <msg>\033[0m Send quick private message")
+    print("  \033[36m/msg\033[0m \033[90m<name>\033[0m    Start private conversation")
+    print("  \033[36m/msg\033[0m \033[90m<name> <msg>\033[0m Send quick private message")
     print("  \033[36m/reply\033[0m        Reply to last private message\n")
     
     # Channels
