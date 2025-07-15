@@ -81,7 +81,7 @@ class BitchatClient:
         self.app_state = AppState()
         self.blocked_peers: Set[str] = set()
         self.channel_creators: Dict[str, str] = {}
-        self.password_protected_channels: Set[str] = {}
+        self.password_protected_channels: Dict[str, str] = {}
         self.channel_key_commitments: Dict[str, str] = {}
         self.discovered_channels: Set[str] = set()
         self.encryption_service = EncryptionService()
@@ -649,11 +649,11 @@ class BitchatClient:
             self.running = False
             return
         
-        if line.startswith("/name "):
+        if line.startswith("/nick "):
             new_name = line[6:].strip()
             if not new_name:
-                print("\033[93m⚠ Usage: /name <new_nickname>\033[0m")
-                print("\033[90mExample: /name Alice\033[0m")
+                print("\033[93m⚠ Usage: /nick <new_nickname>\033[0m")
+                print("\033[90mExample: /nick Alice\033[0m")
             elif len(new_name) > 20:
                 print("\033[93m⚠ Nickname too long\033[0m")
                 print("\033[90mMaximum 20 characters allowed.\033[0m")
@@ -753,7 +753,7 @@ class BitchatClient:
             print("> ", end='', flush=True)
             return
         
-        if line.startswith("/dm "):
+        if line.startswith("/msg "):
             await self.handle_dm_command(line)
             return
         
@@ -905,12 +905,12 @@ class BitchatClient:
         debug_println(self.chat_context.get_status_line())
     
     async def handle_dm_command(self, line: str):
-        """Handle /dm command"""
+        """Handle /msg command"""
         parts = line.split(maxsplit=2)
         
         if len(parts) < 2:
-            print("\033[93m⚠ Usage: /dm <nickname> [message]\033[0m")
-            print("\033[90mExample: /dm Bob Hey there!\033[0m")
+            print("\033[93m⚠ Usage: /msg <nickname> [message]\033[0m")
+            print("\033[90mExample: /msg Bob Hey there!\033[0m")
             return
         
         target_nickname = parts[1]
