@@ -18,7 +18,13 @@ class InfiniGPTBitchat:
             self.tools = json.load(f)
 
         self.models, self.api_keys, self.default_model, self.default_personality, self.prompt, self.options, self.history_size, self.ollama_url = self.config["llm"].values()
-        self.openai_key, self.xai_key, self.google_key, self.mistral_key = self.api_keys.values()
+        self.openai_key = self.api_keys.get("openai")
+        self.xai_key = self.api_keys.get("xai")
+        self.google_key = self.api_keys.get("google")
+        self.mistral_key = self.api_keys.get("mistral")
+        self.anthropic_key = self.api_keys.get("anthropic")
+        self.huggingface_key = self.api_keys.get("huggingface")
+        self.github_key = self.api_keys.get("github")
 
         self.messages = {}
         self.bitchat = BitchatBotAPI(self.on_message)
@@ -63,12 +69,21 @@ class InfiniGPTBitchat:
         elif self.model in self.models.get("google", []):
             bearer = self.google_key
             self.url = "https://generativelanguage.googleapis.com/v1beta/openai"
+        elif self.model in self.models.get("anthropic", []):
+            bearer = self.anthropic_key
+            self.url = "https://api.anthropic.com/v1"
         elif self.model in self.models.get("ollama", []):
             bearer = "hello_friend"
             self.url = f"http://{self.ollama_url}/v1"
+        elif self.model in self.models.get("huggingface", []):
+            bearer = self.huggingface_key
+            self.url = "https://router.huggingface.co/v1"
         elif self.model in self.models.get("mistral", []):
             bearer = self.mistral_key
             self.url = "https://api.mistral.ai/v1"
+        elif self.model in self.models.get("github", []):
+            bearer = self.github_key
+            self.url = "https://models.github.ai/inference"
         else:
             bearer = None
             self.url = ""
