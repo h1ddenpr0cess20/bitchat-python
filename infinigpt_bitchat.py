@@ -17,30 +17,17 @@ class InfiniGPTBitchat:
         with open("schema.json") as f:
             self.tools = json.load(f)
 
-        cfg_llm = self.config["llm"]
-        self.models = cfg_llm["models"]
-        self.api_keys = cfg_llm["api_keys"]
-        (self.default_model,
-         self.default_personality,
-         self.prompt,
-         self.options,
-         self.history_size,
-         self.ollama_url) = (
-            cfg_llm["default_model"],
-            cfg_llm["personality"],
-            cfg_llm["prompt"],
-            cfg_llm["options"],
-            cfg_llm["history_size"],
-            cfg_llm["ollama_url"],
-        )
-        self.openai_key = self.api_keys.get("openai")
-        self.xai_key = self.api_keys.get("xai")
-        self.google_key = self.api_keys.get("google")
-        self.mistral_key = self.api_keys.get("mistral")
+        self.models, self.api_keys, self.default_model, self.default_personality, self.prompt, self.options, self.history_size, self.ollama_url = self.config["llm"].values()
+        self.openai_key, self.xai_key, self.google_key, self.mistral_key = self.api_keys.values()
 
         self.messages = {}
         self.bitchat = BitchatBotAPI(self.on_message)
-        self.bitchat.nickname = self.config.get("irc", {}).get("nickname", self.bitchat.nickname)
+        nickname = self.config.get("bitchat", {}).get("nickname", self.bitchat.nickname)
+        self.bitchat.nickname = nickname
+        self.bitchat.app_state.nickname = nickname
+        # Ensure the nickname is saved to state before handshake
+        import asyncio
+        asyncio.run(self.bitchat.save_app_state())
         self.nickname = self.bitchat.nickname
         self.model = self.default_model
         self.system_prompt = self.prompt[0] + self.default_personality + self.prompt[1]
@@ -375,7 +362,7 @@ class InfiniGPTBitchat:
     async def on_message(self, message, packet, is_private):
         sender_nick = self.bitchat.peers.get(packet.sender_id_str, Peer()).nickname or packet.sender_id_str
         words = message.content.split()
-        allowed_channels = self.config.get("irc", {}).get("channels", [])
+        allowed_channels = self.config.get("bitchat", {}).get("channels", [])
         if is_private:
             if "privmsg" not in self.messages:
                 self.messages["privmsg"] = {}
