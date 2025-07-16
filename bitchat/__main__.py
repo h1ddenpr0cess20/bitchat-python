@@ -1,6 +1,6 @@
-from bitchat.client import main
+from .client import main
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import asyncio
     try:
         asyncio.run(main())

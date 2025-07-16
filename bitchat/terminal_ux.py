@@ -178,20 +178,20 @@ def format_message_display(
     time_str = timestamp.strftime("%H:%M")
     
     if is_private:
-        # Orange for private messages
+        # Orange for private messages (matching iOS)
         if sender == my_nickname:
-            # Message I sent
+            # Message I sent - use brighter orange
             if recipient:
                 return f"\033[2;38;5;208m[{time_str}|DM]\033[0m \033[38;5;214m<you → {recipient}>\033[0m {content}"
             else:
                 return f"\033[2;38;5;208m[{time_str}|DM]\033[0m \033[38;5;214m<you → ???>\033[0m {content}"
         else:
-            # Message I received
+            # Message I received - use normal orange
             return f"\033[2;38;5;208m[{time_str}|DM]\033[0m \033[38;5;208m<{sender} → you>\033[0m {content}"
     elif is_channel:
-        # Blue for channel messages
+        # Blue for channel messages (matching iOS)
         if sender == my_nickname:
-            # My messages - light blue
+            # My messages - light blue (256-color)
             if channel_name:
                 return f"\033[2;34m[{time_str}|{channel_name}]\033[0m \033[38;5;117m<{sender} @ {channel_name}>\033[0m {content}"
             else:
@@ -203,9 +203,9 @@ def format_message_display(
             else:
                 return f"\033[2;34m[{time_str}|Ch]\033[0m \033[34m<{sender} @ ???>\033[0m {content}"
     else:
-        # Public message - green
+        # Public message - green for metadata
         if sender == my_nickname:
-            # My messages - light green
+            # My messages - light green (256-color)
             return f"\033[2;32m[{time_str}]\033[0m \033[38;5;120m<{sender}>\033[0m {content}"
         else:
             # Other users - normal green
@@ -218,7 +218,7 @@ def print_help():
     # General
     print("\033[38;5;40m▶ General\033[0m")
     print("  \033[36m/help\033[0m         Show this help menu")
-    print("  \033[36m/name\033[0m \033[90m<name>\033[0m  Change your nickname")
+    print("  \033[36m/nick\033[0m \033[90m<name>\033[0m  Change your nickname")
     print("  \033[36m/status\033[0m       Show connection info")
     print("  \033[36m/clear\033[0m        Clear the screen")
     print("  \033[36m/exit\033[0m         Quit BitChat\n")
@@ -233,8 +233,8 @@ def print_help():
     # Messaging
     print("\033[38;5;40m▶ Messaging\033[0m")
     print("  \033[90m(type normally to send in current mode)\033[0m")
-    print("  \033[36m/dm\033[0m \033[90m<name>\033[0m    Start private conversation")
-    print("  \033[36m/dm\033[0m \033[90m<name> <msg>\033[0m Send quick private message")
+    print("  \033[36m/msg\033[0m \033[90m<name>\033[0m    Start private conversation")
+    print("  \033[36m/msg\033[0m \033[90m<name> <msg>\033[0m Send quick private message")
     print("  \033[36m/reply\033[0m        Reply to last private message\n")
     
     # Channels
