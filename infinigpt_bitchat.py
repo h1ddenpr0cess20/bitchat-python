@@ -283,7 +283,7 @@ class InfiniGPTBitchat:
         if command in user_commands:
             self.log(f"Received message from {sender} in {channel}: '{' '.join(message)}'")
             await user_commands[command]()
-        if sender in self.config.get("irc", {}).get("admins", []) and command in admin_commands:
+        if sender in self.config.get("bitchat", {}).get("admins", []) and command in admin_commands:
             await admin_commands[command]()
 
     async def handle_privmsg(self, sender, message, peer_id):
@@ -302,7 +302,7 @@ class InfiniGPTBitchat:
         if command in user_commands:
             self.log(f"Received private message from {sender}: '{' '.join(message)}'")
             await user_commands[command]()
-        elif sender in self.config.get("irc", {}).get("admins", []) and command in admin_commands:
+        elif sender in self.config.get("bitchat", {}).get("admins", []) and command in admin_commands:
             await admin_commands[command]()
         else:
             await self.add_history("user", "privmsg", sender, ' '.join(message))
