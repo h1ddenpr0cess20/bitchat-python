@@ -36,7 +36,7 @@ python infinigpt_bitchat.py
 - `.persona <personality>`: Change your personality (character, type, object, idea)
 - `.custom <prompt>`: Set a custom system prompt
 - `.reset`: Reset to default personality
-- `.stock`: Remove personality and reset to standard GPT settings
+- `.stock`: Remove personality and reset to standard settings
 - `.model`: List available models (admin only)
 - `.model <modelname>`: Change model (admin only)
 - `.join <channel>`: Join a channel (admin only)
