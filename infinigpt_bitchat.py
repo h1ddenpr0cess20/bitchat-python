@@ -3,7 +3,6 @@ import logging
 import httpx
 import textwrap
 import json
-import time
 from bitchat.bot_api import BitchatBotAPI
 from bitchat.models import Peer
 from bitchat.terminal_ux import Channel, PrivateDM, Public
@@ -18,21 +17,13 @@ class InfiniGPTBitchat:
             self.tools = json.load(f)
 
         self.models, self.api_keys, self.default_model, self.default_personality, self.prompt, self.options, self.history_size, self.ollama_url = self.config["llm"].values()
-        self.openai_key = self.api_keys.get("openai")
-        self.xai_key = self.api_keys.get("xai")
-        self.google_key = self.api_keys.get("google")
-        self.mistral_key = self.api_keys.get("mistral")
-        self.anthropic_key = self.api_keys.get("anthropic")
-        self.huggingface_key = self.api_keys.get("huggingface")
-        self.github_key = self.api_keys.get("github")
+        self.openai_key, self.xai_key, self.google_key, self.mistral_key, self.anthropic_key, self.huggingface_key, self.github_key = self.api_keys.values()
 
         self.messages = {}
         self.bitchat = BitchatBotAPI(self.on_message)
-        nickname = self.config.get("bitchat", {}).get("nickname", self.bitchat.nickname)
+        nickname = self.config["bitchat"]["nickname"]
         self.bitchat.nickname = nickname
         self.bitchat.app_state.nickname = nickname
-        # Ensure the nickname is saved to state before handshake
-        import asyncio
         asyncio.run(self.bitchat.save_app_state())
         self.nickname = self.bitchat.nickname
         self.model = self.default_model
