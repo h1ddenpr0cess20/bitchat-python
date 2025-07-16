@@ -49,9 +49,9 @@
         "history_size": 24,
         "ollama_url": "localhost:11434"
     },
-    "irc": {
+    "bitchat": {
         "nickname": "InfiniGPT",
         "channels": ["public", "test", "test2"],
-        "admins": ["vagabond", "admin"]
+        "admins": ["admin"]
     }
 }

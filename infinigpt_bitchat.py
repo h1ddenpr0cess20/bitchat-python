@@ -6,7 +6,7 @@ import json
 import time
 from bitchat.bot_api import BitchatBotAPI
 from bitchat.models import Peer
-from bitchat.terminal_ux import Channel, PrivateDM
+from bitchat.terminal_ux import Channel, PrivateDM, Public
 from tools import *
 
 class InfiniGPTBitchat:
@@ -17,29 +17,17 @@ class InfiniGPTBitchat:
         with open("schema.json") as f:
             self.tools = json.load(f)
 
-        cfg_llm = self.config["llm"]
-        self.models = cfg_llm["models"]
-        self.api_keys = cfg_llm["api_keys"]
-        (self.default_model,
-         self.default_personality,
-         self.prompt,
-         self.options,
-         self.history_size,
-         self.ollama_url) = (
-            cfg_llm["default_model"],
-            cfg_llm["personality"],
-            cfg_llm["prompt"],
-            cfg_llm["options"],
-            cfg_llm["history_size"],
-            cfg_llm["ollama_url"],
-        )
-        self.openai_key = self.api_keys.get("openai")
-        self.xai_key = self.api_keys.get("xai")
-        self.google_key = self.api_keys.get("google")
-        self.mistral_key = self.api_keys.get("mistral")
+        self.models, self.api_keys, self.default_model, self.default_personality, self.prompt, self.options, self.history_size, self.ollama_url = self.config["llm"].values()
+        self.openai_key, self.xai_key, self.google_key, self.mistral_key = self.api_keys.values()
 
         self.messages = {}
         self.bitchat = BitchatBotAPI(self.on_message)
+        nickname = self.config.get("bitchat", {}).get("nickname", self.bitchat.nickname)
+        self.bitchat.nickname = nickname
+        self.bitchat.app_state.nickname = nickname
+        # Ensure the nickname is saved to state before handshake
+        import asyncio
+        asyncio.run(self.bitchat.save_app_state())
         self.nickname = self.bitchat.nickname
         self.model = self.default_model
         self.system_prompt = self.prompt[0] + self.default_personality + self.prompt[1]
@@ -188,10 +176,14 @@ class InfiniGPTBitchat:
                 await asyncio.sleep(1.5)
         else:
             old_mode = self.bitchat.chat_context.current_mode
-            if isinstance(old_mode, Channel) and old_mode.name != channel:
-                self.bitchat.chat_context.switch_to_channel_silent(channel)
-            elif not isinstance(old_mode, Channel):
-                self.bitchat.chat_context.switch_to_channel_silent(channel)
+            if channel == "public":
+                if isinstance(old_mode, Channel) or isinstance(old_mode, PrivateDM):
+                    self.bitchat.chat_context.current_mode = Public()
+            else:
+                if isinstance(old_mode, Channel) and old_mode.name != channel:
+                    self.bitchat.chat_context.switch_to_channel_silent(channel)
+                elif not isinstance(old_mode, Channel):
+                    self.bitchat.chat_context.switch_to_channel_silent(channel)
             for line in lines:
                 await self.bitchat.send_public_message(line)
                 await asyncio.sleep(1.5)
@@ -219,10 +211,14 @@ class InfiniGPTBitchat:
                     await asyncio.sleep(1.5)
             else:
                 old_mode = self.bitchat.chat_context.current_mode
-                if isinstance(old_mode, Channel) and old_mode.name != channel:
-                    self.bitchat.chat_context.switch_to_channel_silent(channel)
-                elif not isinstance(old_mode, Channel):
-                    self.bitchat.chat_context.switch_to_channel_silent(channel)
+                if channel == "public":
+                    if isinstance(old_mode, Channel) or isinstance(old_mode, PrivateDM):
+                        self.bitchat.chat_context.current_mode = Public()
+                else:
+                    if isinstance(old_mode, Channel) and old_mode.name != channel:
+                        self.bitchat.chat_context.switch_to_channel_silent(channel)
+                    elif not isinstance(old_mode, Channel):
+                        self.bitchat.chat_context.switch_to_channel_silent(channel)
                 for line in lines:
                     await self.bitchat.send_public_message(line)
                     await asyncio.sleep(1.5)
@@ -237,7 +233,10 @@ class InfiniGPTBitchat:
                 await self.bitchat.send_private_message(f"{self.nickname} reset to default for {sender}", peer_id, sender)
             else:
                 old_mode = self.bitchat.chat_context.current_mode
-                self.bitchat.chat_context.switch_to_channel_silent(channel)
+                if channel == "public":
+                    self.bitchat.chat_context.current_mode = Public()
+                else:
+                    self.bitchat.chat_context.switch_to_channel_silent(channel)
                 await self.bitchat.send_public_message(f"{self.nickname} reset to default for {sender}")
                 self.bitchat.chat_context.current_mode = old_mode
         else:
@@ -245,7 +244,10 @@ class InfiniGPTBitchat:
                 await self.bitchat.send_private_message(f"Stock settings applied for {sender}", peer_id, sender)
             else:
                 old_mode = self.bitchat.chat_context.current_mode
-                self.bitchat.chat_context.switch_to_channel_silent(channel)
+                if channel == "public":
+                    self.bitchat.chat_context.current_mode = Public()
+                else:
+                    self.bitchat.chat_context.switch_to_channel_silent(channel)
                 await self.bitchat.send_public_message(f"Stock settings applied for {sender}")
                 self.bitchat.chat_context.current_mode = old_mode
 
@@ -315,7 +317,10 @@ class InfiniGPTBitchat:
                         await self.bitchat.send_private_message(f"Model set to {self.model}", peer_id, sender)
                     else:
                         old_mode = self.bitchat.chat_context.current_mode
-                        self.bitchat.chat_context.switch_to_channel_silent(channel)
+                        if channel == "public":
+                            self.bitchat.chat_context.current_mode = Public()
+                        else:
+                            self.bitchat.chat_context.switch_to_channel_silent(channel)
                         await self.bitchat.send_public_message(f"Model set to {self.model}")
                         self.bitchat.chat_context.current_mode = old_mode
                     return
@@ -323,7 +328,10 @@ class InfiniGPTBitchat:
                 await self.bitchat.send_private_message(f"Model {model} not found in available models.", peer_id, sender)
             else:
                 old_mode = self.bitchat.chat_context.current_mode
-                self.bitchat.chat_context.switch_to_channel_silent(channel)
+                if channel == "public":
+                    self.bitchat.chat_context.current_mode = Public()
+                else:
+                    self.bitchat.chat_context.switch_to_channel_silent(channel)
                 await self.bitchat.send_public_message(f"Model {model} not found in available models.")
                 self.bitchat.chat_context.current_mode = old_mode
         else:
@@ -336,7 +344,10 @@ class InfiniGPTBitchat:
                 current_model = [f"Current model: {self.model}", "Available models: " + ", ".join([m for prov, models in self.models.items() for m in models])]
                 lines = self.chop('\n'.join(current_model))
                 old_mode = self.bitchat.chat_context.current_mode
-                self.bitchat.chat_context.switch_to_channel_silent(channel)
+                if channel == "public":
+                    self.bitchat.chat_context.current_mode = Public()
+                else:
+                    self.bitchat.chat_context.switch_to_channel_silent(channel)
                 for line in lines:
                     await self.bitchat.send_public_message(line)
                 self.bitchat.chat_context.current_mode = old_mode
@@ -351,7 +362,7 @@ class InfiniGPTBitchat:
     async def on_message(self, message, packet, is_private):
         sender_nick = self.bitchat.peers.get(packet.sender_id_str, Peer()).nickname or packet.sender_id_str
         words = message.content.split()
-        allowed_channels = self.config.get("irc", {}).get("channels", [])
+        allowed_channels = self.config.get("bitchat", {}).get("channels", [])
         if is_private:
             if "privmsg" not in self.messages:
                 self.messages["privmsg"] = {}
