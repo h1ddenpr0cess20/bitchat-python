@@ -46,20 +46,6 @@ python infinigpt_bitchat.py
 
 You can also privately message the bot to chat without using commands.
 
-## Configuration
-See `config.json` for all options:
-- `llm.models`: List of available models per provider
-- `llm.api_keys`: API keys for each provider
-- `llm.default_model`: Default model to use
-- `llm.personality`: Default personality
-- `llm.prompt`: System prompt template
-- `llm.options`: Model options (temperature, top_p, etc.)
-- `llm.history_size`: Number of messages to keep per user
-- `llm.ollama_url`: Ollama server URL
-- `bitchat.nickname`: Bot nickname
-- `bitchat.channels`: Allowed channels
-- `bitchat.admins`: List of admin usernames
-
 ## Extending
 - Add new tools in `tools.py`
 - Register tool schemas in `schema.json`
