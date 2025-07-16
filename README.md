@@ -1,8 +1,7 @@
-# BitChat Python
+# infinigpt-bitchat
 
-A Python implementation of the BitChat decentralized, peer-to-peer, encrypted chat application over BLE.
 
-This is a fork of the bitchat-python project, which is a rewrite of the original Rust-based `bitchat-terminal`.
+This is a fork of the [bitchat-python](https://github.com/kaganisildak/bitchat-python) project and a port of the [infinigpt-irc](https://github.com/h1ddenpr0cess20/infinigpt-irc) project.
 
 ## Installation
 
