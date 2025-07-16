@@ -3,7 +3,6 @@ import logging
 import httpx
 import textwrap
 import json
-import time
 from bitchat.bot_api import BitchatBotAPI
 from bitchat.models import Peer
 from bitchat.terminal_ux import Channel, PrivateDM, Public
@@ -18,15 +17,13 @@ class InfiniGPTBitchat:
             self.tools = json.load(f)
 
         self.models, self.api_keys, self.default_model, self.default_personality, self.prompt, self.options, self.history_size, self.ollama_url = self.config["llm"].values()
-        self.openai_key, self.xai_key, self.google_key, self.mistral_key = self.api_keys.values()
+        self.openai_key, self.xai_key, self.google_key, self.mistral_key, self.anthropic_key, self.huggingface_key, self.github_key = self.api_keys.values()
 
         self.messages = {}
         self.bitchat = BitchatBotAPI(self.on_message)
-        nickname = self.config.get("bitchat", {}).get("nickname", self.bitchat.nickname)
+        nickname = self.config["bitchat"]["nickname"]
         self.bitchat.nickname = nickname
         self.bitchat.app_state.nickname = nickname
-        # Ensure the nickname is saved to state before handshake
-        import asyncio
         asyncio.run(self.bitchat.save_app_state())
         self.nickname = self.bitchat.nickname
         self.model = self.default_model
@@ -63,12 +60,21 @@ class InfiniGPTBitchat:
         elif self.model in self.models.get("google", []):
             bearer = self.google_key
             self.url = "https://generativelanguage.googleapis.com/v1beta/openai"
+        elif self.model in self.models.get("anthropic", []):
+            bearer = self.anthropic_key
+            self.url = "https://api.anthropic.com/v1"
         elif self.model in self.models.get("ollama", []):
             bearer = "hello_friend"
             self.url = f"http://{self.ollama_url}/v1"
+        elif self.model in self.models.get("huggingface", []):
+            bearer = self.huggingface_key
+            self.url = "https://router.huggingface.co/v1"
         elif self.model in self.models.get("mistral", []):
             bearer = self.mistral_key
             self.url = "https://api.mistral.ai/v1"
+        elif self.model in self.models.get("github", []):
+            bearer = self.github_key
+            self.url = "https://models.github.ai/inference"
         else:
             bearer = None
             self.url = ""
@@ -277,7 +283,7 @@ class InfiniGPTBitchat:
         if command in user_commands:
             self.log(f"Received message from {sender} in {channel}: '{' '.join(message)}'")
             await user_commands[command]()
-        if sender in self.config.get("irc", {}).get("admins", []) and command in admin_commands:
+        if sender in self.config.get("bitchat", {}).get("admins", []) and command in admin_commands:
             await admin_commands[command]()
 
     async def handle_privmsg(self, sender, message, peer_id):
@@ -296,7 +302,7 @@ class InfiniGPTBitchat:
         if command in user_commands:
             self.log(f"Received private message from {sender}: '{' '.join(message)}'")
             await user_commands[command]()
-        elif sender in self.config.get("irc", {}).get("admins", []) and command in admin_commands:
+        elif sender in self.config.get("bitchat", {}).get("admins", []) and command in admin_commands:
             await admin_commands[command]()
         else:
             await self.add_history("user", "privmsg", sender, ' '.join(message))
