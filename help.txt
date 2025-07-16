@@ -10,4 +10,4 @@ I am an AI chatbot.  I can have any personality you want me to have.  Each user 
 .join <channel> to join a channel. (admin only)
 .part <channel> to leave a channel. (admin only)
 .gpersona <personality> to set a new global default personality (admin only)
-Available at https://github.com/h1ddenpr0cess20/infinigpt-irc
+Available at https://github.com/h1ddenpr0cess20/infinigpt-bitchat
