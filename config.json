@@ -50,11 +50,8 @@
         "history_size": 24,
         "ollama_url": "localhost:11434"
     },
-    "irc": {
-        "server": "irc.SERVER.TLD",
-        "port": 6667,
+    "bitchat": {
         "nickname": "InfiniGPT",
-        "password": null,
         "channels": ["#channel1", "#channel2"],
         "admins": ["nick1", "nick2"]
     }

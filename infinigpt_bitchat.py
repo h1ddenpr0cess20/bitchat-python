@@ -18,6 +18,7 @@ class InfiniGPTBitchat:
             self.tools = json.load(f)
 
         cfg_llm = self.config["llm"]
+        cfg_bc = self.config.get("bitchat", {})
         self.models = cfg_llm["models"]
         self.api_keys = cfg_llm["api_keys"]
         (self.default_model,
@@ -40,7 +41,10 @@ class InfiniGPTBitchat:
 
         self.messages = {}
         self.bitchat = BitchatBotAPI(self.on_message)
+        self.bitchat.nickname = cfg_bc.get("nickname", self.bitchat.nickname)
         self.nickname = self.bitchat.nickname
+        self.channels = cfg_bc.get("channels", [])
+        self.admins = cfg_bc.get("admins", [])
         self.model = self.default_model
         self.system_prompt = self.prompt[0] + self.default_personality + self.prompt[1]
 
@@ -275,7 +279,7 @@ class InfiniGPTBitchat:
         if command in user_commands:
             self.log(f"Received message from {sender} in {channel}: '{' '.join(message)}'")
             await user_commands[command]()
-        if sender in self.config.get("irc", {}).get("admins", []) and command in admin_commands:
+        if sender in self.admins and command in admin_commands:
             await admin_commands[command]()
 
     async def handle_privmsg(self, sender, message, peer_id):
@@ -294,7 +298,7 @@ class InfiniGPTBitchat:
         if command in user_commands:
             self.log(f"Received private message from {sender}: '{' '.join(message)}'")
             await user_commands[command]()
-        elif sender in self.config.get("irc", {}).get("admins", []) and command in admin_commands:
+        elif sender in self.admins and command in admin_commands:
             await admin_commands[command]()
         else:
             await self.add_history("user", "privmsg", sender, ' '.join(message))
@@ -360,6 +364,8 @@ class InfiniGPTBitchat:
             await self.handle_privmsg(sender_nick, words, packet.sender_id_str)
         else:
             channel = message.channel or "public"
+            if channel != "public" and channel not in self.channels:
+                return
             if channel not in self.messages:
                 self.messages[channel] = {}
             if sender_nick not in self.messages[channel]:
@@ -368,6 +374,8 @@ class InfiniGPTBitchat:
             await self.handle_message(channel, sender_nick, words, packet.sender_id_str)
 
     async def start(self):
+        for ch in self.channels:
+            self.bitchat.chat_context.add_channel(ch)
         await self.bitchat.run_bot()
 
 if __name__ == "__main__":
