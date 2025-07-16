@@ -19,7 +19,7 @@ InfiniGPT-Bitchat is an asynchronous, multi-channel AI chatbot for BitChat, port
    ```bash
    pip install -r requirements.txt
    ```
-2. Get API keys for the services you want to use (OpenAI, xAI, Google, Mistral, HuggingFace, Anthropic, Ollama). Add them to `config.json`.
+2. Get API keys for the services you want to use (OpenAI, xAI, Google, Mistral, HuggingFace, Anthropic). Add them to `config.json`.
 3. Edit `config.json` to set your BitChat nickname, channels, admins, and available models.
 4. (Optional) Install and configure [Ollama](https://ollama.com/) for local LLMs.
 5. (Optional) Add your own tools in `tools.py` and register them in `schema.json`.
