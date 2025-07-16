@@ -9,17 +9,16 @@
                 "gpt-4.1-nano"
             ],
             "xai": [
-                "grok-beta",
-                "grok-2",
-                "grok-3-mini-beta",
-                "grok-3-mini-fast-beta",
-                "grok-3-beta",
-                "grok-3-fast-beta"
+                "grok-3-mini",
+                "grok-3-mini-fast",
+                "grok-3",
+                "grok-3-fast",
+                "grok-4"
             ],
             "google": [
                 "gemini-2.0-flash-exp", 
-                "gemini-2.0-flash-thinking-exp",
-                "gemini-2.5-pro-preview-03-25"
+                "gemini-2.5-flash",
+                "gemini-2.5-pro"
             ],
             "mistral": [
                 "codestral-latest",
@@ -30,7 +29,7 @@
             "ollama": [
                 "llama3.2",
                 "qwen2.5:14b",
-                "qwen2.5:32b"
+                "qwen3"
             ]
         },
         "api_keys": {
@@ -39,7 +38,7 @@
             "google": "API_KEY",
             "mistral": "API_KEY"
         },
-        "default_model": "gpt-4o-mini",
+        "default_model": "qwen3",
         "personality": "an AI that can assume any personality, named InfiniGPT",
         "prompt": ["Assume the personality of ", ".  Act as this and never break character, never say you are not actually this character or refuse to play the character.  Keep your responses relatively short, unless told otherwise.  Avoid using lists and markdown."],
         "options": {
@@ -51,11 +50,8 @@
         "ollama_url": "localhost:11434"
     },
     "irc": {
-        "server": "irc.SERVER.TLD",
-        "port": 6667,
         "nickname": "InfiniGPT",
-        "password": null,
-        "channels": ["#channel1", "#channel2"],
-        "admins": ["nick1", "nick2"]
+        "channels": ["public", "test", "test2"],
+        "admins": ["vagabond", "admin"]
     }
 }

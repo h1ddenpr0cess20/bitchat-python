@@ -351,6 +351,7 @@ class InfiniGPTBitchat:
     async def on_message(self, message, packet, is_private):
         sender_nick = self.bitchat.peers.get(packet.sender_id_str, Peer()).nickname or packet.sender_id_str
         words = message.content.split()
+        allowed_channels = self.config.get("irc", {}).get("channels", [])
         if is_private:
             if "privmsg" not in self.messages:
                 self.messages["privmsg"] = {}
@@ -359,7 +360,12 @@ class InfiniGPTBitchat:
                 self.messages["privmsg"][sender_nick].append({"role": "system", "content": self.prompt[0] + self.default_personality + self.prompt[1]})
             await self.handle_privmsg(sender_nick, words, packet.sender_id_str)
         else:
-            channel = message.channel or "public"
+            # Normalize only incoming channel name
+            channel = message.channel if message.channel else allowed_channels[0] if allowed_channels else "public"
+            channel_norm = channel.lstrip('#')
+            if channel_norm not in allowed_channels:
+                self.log(f"Ignoring message in channel {channel} not in allowed channels: {allowed_channels}")
+                return
             if channel not in self.messages:
                 self.messages[channel] = {}
             if sender_nick not in self.messages[channel]:
