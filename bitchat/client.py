@@ -166,7 +166,11 @@ class BitchatClient:
         debug_println("[1] Match Found! Connecting...")
         
         try:
-            self.client = BleakClient(device.address, disconnected_callback=self.handle_disconnect)
+            self.client = BleakClient(
+                device.address,
+                disconnected_callback=self.handle_disconnect,
+                winrt={"retry_on_services_changed": True},
+            )
             await self.client.connect()
             
             # Find characteristic
@@ -1472,7 +1476,11 @@ class BitchatClient:
                 if device:
                     print(f"\r\033[K\033[92m» Found a BitChat device! Connecting...\033[0m")
                     try:
-                        self.client = BleakClient(device.address, disconnected_callback=self.handle_disconnect)
+                        self.client = BleakClient(
+                            device.address,
+                            disconnected_callback=self.handle_disconnect,
+                            winrt={"retry_on_services_changed": True},
+                        )
                         await self.client.connect()
                         
                         # Find characteristic
