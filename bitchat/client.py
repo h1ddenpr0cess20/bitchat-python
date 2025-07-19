@@ -254,7 +254,25 @@ class BitchatClient:
                     debug_println(f"[CHANNEL] Restored key for password-protected channel: {channel}")
                 except Exception as e:
                     debug_println(f"[CHANNEL] Failed to restore key for {channel}: {e}")
-    
+
+    async def rediscover_services(self) -> bool:
+        """Rediscover services and update characteristic after a service change."""
+        if not self.client:
+            return False
+
+        try:
+            services = await self.client.get_services()
+            for service in services:
+                for char in service.characteristics:
+                    if char.uuid.lower() == BITCHAT_CHARACTERISTIC_UUID.lower():
+                        self.characteristic = char
+                        await self.client.start_notify(self.characteristic, self.notification_handler)
+                        debug_println("[SERVICE] Services rediscovered and notifications restarted")
+                        return True
+        except Exception as e:
+            debug_println(f"[SERVICE] Failed to rediscover services: {e}")
+        return False
+
     async def send_packet(self, packet: bytes):
         """Send packet, with fragmentation if needed"""
         if not self.client or not self.characteristic:
@@ -276,8 +294,8 @@ class BitchatClient:
             write_with_response = len(packet) > 512
             try:
                 await self.client.write_gatt_char(
-                    self.characteristic, 
-                    packet, 
+                    self.characteristic,
+                    packet,
                     response=write_with_response
                 )
             except Exception as e:
@@ -287,7 +305,24 @@ class BitchatClient:
                     if self.client:
                         self.handle_disconnect(self.client)
                     return
-                
+                # Service changed event can invalidate handles
+                if "handle" in str(e).lower() or "not found" in str(e).lower():
+                    debug_println("[!] Characteristic handle invalid. Rediscovering services...")
+                    if await self.rediscover_services():
+                        try:
+                            await self.client.write_gatt_char(
+                                self.characteristic,
+                                packet,
+                                response=write_with_response
+                            )
+                            return
+                        except Exception:
+                            pass
+                    debug_println("[!] Failed to recover from service change. Disconnecting...")
+                    if self.client:
+                        self.handle_disconnect(self.client)
+                    return
+
                 # Fallback to write without response if with response fails
                 if write_with_response:
                     try:
