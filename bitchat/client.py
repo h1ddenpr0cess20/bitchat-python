@@ -752,6 +752,18 @@ class BitchatClient:
                 message = parse_bitchat_message_payload(unpadded)
             else:
                 message = parse_bitchat_message_payload(packet.payload)
+
+            # Track discovered channels and ignore ones we're not in
+            if message.channel:
+                self.discovered_channels.add(message.channel)
+                if message.is_encrypted:
+                    self.password_protected_channels.add(message.channel)
+                if message.channel not in self.chat_context.active_channels:
+                    debug_println(
+                        f"[CHANNEL] Ignoring message from {message.channel} (not joined)"
+                    )
+                    return
+
             # Check for duplicates using both bloom filter and set
             if message.id not in self.processed_messages:
                 # Add to bloom filter and set
