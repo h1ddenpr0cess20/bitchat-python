@@ -26,7 +26,8 @@ async def handle_user_input(client: "BitchatClient", line: str):
         print_help()
         return
     
-    if line == "/exit":
+    cmd = line.strip()
+    if cmd in ["/exit", "/q"]:
         # Send leave notification if connected
         if client.client and client.client.is_connected:
             leave_packet = create_bitchat_packet(
@@ -34,7 +35,7 @@ async def handle_user_input(client: "BitchatClient", line: str):
             )
             await client.send_packet(leave_packet)
             await asyncio.sleep(0.1)  # Give time for the packet to send
-        
+
         await client.save_app_state()
         client.running = False
         return

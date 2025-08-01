@@ -252,11 +252,11 @@ class BitchatClient:
                 import traceback
                 debug_println(f"[3] Traceback: {traceback.format_exc()}")
                 # Fallback to old key exchange
-                handshake_message = self.encryption_service.initiate_handshake(self.my_peer_id)
-                handshake_packet = create_bitchat_packet(
-                    self.my_peer_id, MessageType.KEY_EXCHANGE, handshake_message
+                key_data = self.encryption_service.get_combined_public_key_data()
+                key_packet = create_bitchat_packet(
+                    self.my_peer_id, MessageType.KEY_EXCHANGE, key_data
                 )
-                await self.send_packet(handshake_packet)
+                await self.send_packet(key_packet)
             
             # Wait a bit between packets
             await asyncio.sleep(0.5)
