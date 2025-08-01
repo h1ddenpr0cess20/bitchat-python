@@ -245,21 +245,18 @@ def parse_bitchat_packet(data: bytes) -> BitchatPacket:
     payload_len = struct.unpack('>H', data[offset:offset+2])[0]
     offset += 2
     
-    # Sender ID (trim null bytes)
-    sender_id_raw = data[offset:offset+SENDER_ID_SIZE]
-    # Remove trailing null bytes
-    sender_id = sender_id_raw.rstrip(b'\x00')
-    sender_id_str = sender_id.hex()
+    # Sender ID (exact 8 bytes)
+    sender_id_bytes = data[offset:offset+SENDER_ID_SIZE]
+    sender_id_str = sender_id_bytes.hex()
     offset += SENDER_ID_SIZE
     
     # Recipient ID
     recipient_id = None
     recipient_id_str = None
     if has_recipient:
-        recipient_id_raw = data[offset:offset+RECIPIENT_ID_SIZE]
-        # Remove trailing null bytes
-        recipient_id = recipient_id_raw.rstrip(b'\x00')
-        recipient_id_str = recipient_id.hex()
+        recipient_id_bytes = data[offset:offset+RECIPIENT_ID_SIZE]
+        recipient_id = recipient_id_bytes
+        recipient_id_str = recipient_id_bytes.hex()
         offset += RECIPIENT_ID_SIZE
     
     # Payload
