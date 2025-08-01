@@ -24,7 +24,7 @@ from .fragmentation import Fragment, FragmentType, fragment_payload
 from .terminal_ux import ChatContext, ChatMode, Public, Channel, PrivateDM, format_message_display, print_help, clear_screen
 from . import commands, messaging, noise, handlers, user_input
 from .persistence import AppState, load_state, save_state, encrypt_password, decrypt_password
-from .protocol import (Peer, BitchatPacket, BitchatMessage, DeliveryAck, DeliveryTracker, FragmentCollector, MessageType, DebugLevel, debug_println, debug_full_println, parse_bitchat_packet, parse_bitchat_message_payload, create_bitchat_packet, create_bitchat_packet_with_signature, create_bitchat_message_payload_full, create_encrypted_channel_message_payload, should_fragment, should_send_ack, unpad_message, print_banner)
+from .protocol import (Peer, BitchatPacket, BitchatMessage, DeliveryAck, DeliveryTracker, FragmentCollector, MessageType, DebugLevel, debug_println, debug_full_println, parse_bitchat_packet, parse_bitchat_message_payload, create_bitchat_packet, create_bitchat_packet_with_signature, create_bitchat_message_payload_full, create_encrypted_channel_message_payload, should_fragment, should_send_ack, unpad_message, print_banner, BITCHAT_SERVICE_UUID, BITCHAT_CHARACTERISTIC_UUID)
 
 class BitchatClient:
     def __init__(self):
