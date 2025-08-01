@@ -1,0 +1,9 @@
+bitchat/__pycache__/__init__.cpython-313.pyc
+bitchat/__pycache__/__main__.cpython-313.pyc
+bitchat/__pycache__/api.cpython-313.pyc
+bitchat/__pycache__/client.cpython-313.pyc
+bitchat/__pycache__/compression.cpython-313.pyc
+bitchat/__pycache__/encryption.cpython-313.pyc
+bitchat/__pycache__/fragmentation.cpython-313.pyc
+bitchat/__pycache__/persistence.cpython-313.pyc
+bitchat/__pycache__/terminal_ux.cpython-313.pyc
