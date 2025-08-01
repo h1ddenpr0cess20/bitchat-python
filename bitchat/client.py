@@ -21,11 +21,26 @@ from bleak.backends.device import BLEDevice
 import aioconsole
 from pybloom_live import BloomFilter
 
-from encryption import EncryptionService, NoiseError
-from compression import compress_if_beneficial, decompress
-from fragmentation import Fragment, FragmentType, fragment_payload
-from terminal_ux import ChatContext, ChatMode, Public, Channel, PrivateDM, format_message_display, print_help, clear_screen
-from persistence import AppState, load_state, save_state, encrypt_password, decrypt_password
+from .encryption import EncryptionService, NoiseError
+from .compression import compress_if_beneficial, decompress
+from .fragmentation import Fragment, FragmentType, fragment_payload
+from .terminal_ux import (
+    ChatContext,
+    ChatMode,
+    Public,
+    Channel,
+    PrivateDM,
+    format_message_display,
+    print_help,
+    clear_screen,
+)
+from .persistence import (
+    AppState,
+    load_state,
+    save_state,
+    encrypt_password,
+    decrypt_password,
+)
 
 # Version
 VERSION = "v1.1.0"
@@ -233,9 +248,13 @@ class BitchatClient:
     def _on_peer_authenticated(self, peer_id: str, fingerprint: str):
         """Callback when a peer is authenticated via Noise protocol"""
         debug_println(f"[NOISE] Peer {peer_id} authenticated with fingerprint: {fingerprint[:16]}...")
-        
+
         # Send any pending private messages for this peer
         asyncio.create_task(self.send_pending_private_messages(peer_id))
+
+        # After handshake, advertise our identity and nickname to the peer so
+        # they don't see our raw peer ID only.
+        asyncio.create_task(self._send_identity_and_announce(peer_id))
         
     def _on_handshake_required(self, peer_id: str):
         """Callback when handshake is required for a peer"""
@@ -271,15 +290,65 @@ class BitchatClient:
                     self.pending_private_messages[peer_id].append((content, nickname, message_id))
                     # Don't retry immediately, let it retry later
                     break
+
+    async def _send_identity_and_announce(self, peer_id: str) -> None:
+        """Send our identity announcement and nickname to a specific peer."""
+        if not self.client or not self.characteristic:
+            return
+
+        try:
+            timestamp_ms = int(time.time() * 1000)
+            public_key_bytes = self.encryption_service.get_public_key()
+            signing_key_bytes = self.encryption_service.get_signing_public_key_bytes()
+
+            timestamp_data = str(timestamp_ms).encode("utf-8")
+            binding = self.my_peer_id.encode("utf-8") + public_key_bytes + timestamp_data
+            signature = self.encryption_service.sign_data(binding)
+
+            identity_payload = self.encode_noise_identity_announcement_binary(
+                self.my_peer_id,
+                public_key_bytes,
+                signing_key_bytes,
+                self.nickname,
+                timestamp_ms,
+                signature,
+            )
+
+            id_packet = create_bitchat_packet_with_recipient(
+                self.my_peer_id,
+                peer_id,
+                MessageType.NOISE_IDENTITY_ANNOUNCE,
+                identity_payload,
+                signature,
+            )
+            await self.send_packet(id_packet)
+
+            # Small pause before announce to mimic handshake sequence timing
+            await asyncio.sleep(0.2)
+
+            announce_packet = create_bitchat_packet_with_recipient(
+                self.my_peer_id,
+                peer_id,
+                MessageType.ANNOUNCE,
+                self.nickname.encode(),
+                None,
+            )
+            await self.send_packet(announce_packet)
+        except Exception as e:
+            debug_println(f"[NOISE] Failed to send identity announce to {peer_id}: {e}")
         
     async def find_device(self) -> Optional[BLEDevice]:
         """Scan for BitChat service"""
         debug_println("[1] Scanning for bitchat service...")
         
-        devices = await BleakScanner.discover(
-            timeout=5.0,
-            service_uuids=[BITCHAT_SERVICE_UUID]
-        )
+        try:
+            devices = await BleakScanner.discover(
+                timeout=5.0,
+                service_uuids=[BITCHAT_SERVICE_UUID]
+            )
+        except Exception as e:
+            debug_println(f"[SCANNER] Failed to scan: {e}")
+            return None
         
         for device in devices:
             debug_full_println(f"Found device: {device.name} - {device.address}")
@@ -737,6 +806,18 @@ class BitchatClient:
                 message = parse_bitchat_message_payload(unpadded)
             else:
                 message = parse_bitchat_message_payload(packet.payload)
+
+            # Track discovered channels and ignore ones we're not in
+            if message.channel:
+                self.discovered_channels.add(message.channel)
+                if message.is_encrypted:
+                    self.password_protected_channels.add(message.channel)
+                if message.channel not in self.chat_context.active_channels:
+                    debug_println(
+                        f"[CHANNEL] Ignoring message from {message.channel} (not joined)"
+                    )
+                    return
+
             # Check for duplicates using both bloom filter and set
             if message.id not in self.processed_messages:
                 # Add to bloom filter and set

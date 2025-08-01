@@ -1,83 +1,44 @@
 # BitChat Python
 
-A Python implementation of the BitChat decentralized, peer-to-peer, encrypted chat application over BLE.
+This project is a Python implementation of the BitChat decentralized, peer-to-peer, encrypted chat application over BLE.
+It is based on the original [bitchat-terminal](https://github.com/ShilohEye/bitchat-terminal) client.
 
-*This project is a rewrite of the [original Rust-based `bitchat-terminal`](https://github.com/ShilohEye/bitchat-terminal).*
+## Installation
 
-## Table of contents
-* [Installation](#installation)
-* [Usage](#usage)
-  * [Simple start](#simple-start)
-  * [CLI startup options](#cli-startup-args)
-  * [BitChat Commands](#bitchat-commands)
-* [Clone, Develop and Build](#clone-develop-and-build)
-  * [Setup environment](#clone-and-setup-editable-environment-using-uv)
-  * [Build](#build-sdist-and-wheel)
-
-
+```bash
+pip install -r requirements.txt
+```
 
 ## Usage
 
-### Simple start
-```Shell
-python3 bitchat.py
+Run the interactive terminal client:
+
+```bash
+python -m bitchat
 ```
 
+## API
 
+A lightweight wrapper around ``BitchatClient`` called ``BitchatBotAPI`` is
+included for building bots.  It exposes async helpers for sending messages and
+consuming received ones.
 
-### BitChat Commands
+```python
+import asyncio
+from bitchat.api import BitchatBotAPI
 
-This section details the various commands available within BitChat.
-```shell
-General Commands
+async def bot():
+    api = BitchatBotAPI()
+    # Run connection and scanning loop in background
+    asyncio.create_task(api.run_bot())
 
-* `/help`               : Show this help menu
-* `/h`                  : Alias for /help
-* `/me`                 : Get your Nickname and peer_id
-* `/name <name>`        : Change your nickname
-* `/status`             : Show connection info
-* `/clear`              : Clear the screen
-* `/exit`               : Quit BitChat
-*  `/q`                 : Alias for /exit
+    await api.send_public_message("Hello from a bot!")
 
+    while True:
+        msg = await api.next_message()
+        print(f"{msg['sender_nickname']}: {msg['content']}")
 
-Navigation Commands
-
-* `1-9`                 : Quick switch to conversation
-* `/list`               : Show all conversations
-* `/switch`             : Interactive conversation switcher
-* `/public`             : Go to public chat
-
-
-Messaging Commands
-
-(Type normally to send in current mode)
-
-* `/dm <name>`          : Start private conversation
-* `/dm <name> <msg>`    : Send quick private message
-* `/reply`              : Reply to last private message
-
-
-Channel Commands
-
-* `/j #channel`               : Join or create a channel
-* `/j #channel <password>`    : Join with password
-* `/leave`                    : Leave current channel
-* `/pass <pwd>`               : Set channel password (owner only)
-* `/transfer @user`           : Transfer ownership (owner only)
-
-
-Discovery Commands
-
-* `/channels`                 : List all discovered channels
-* `/online`                   : Show who`s online
-* `/w`                        : Alias for /online
-
-
-Privacy & Security Commands
-
-* `/block @user`       : Block a user
-* `/block`             : List blocked users
-* `/unblock @user`     : Unblock a user
+asyncio.run(bot())
 ```
 
+See the built in command help (`/help`) for a list of chat commands.
