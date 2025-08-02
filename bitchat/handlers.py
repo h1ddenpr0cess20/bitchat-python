@@ -155,6 +155,10 @@ async def handle_message(client: "BitchatClient", packet: BitchatPacket, raw_dat
         debug_println(f"[BLOCKED] Ignoring message from blocked peer: {packet.sender_id_str}")
         return
     
+    # Ensure peer exists in our peers dictionary
+    if packet.sender_id_str not in client.peers:
+        client.peers[packet.sender_id_str] = Peer()
+    
     # Check if message is for us
     is_broadcast = packet.recipient_id == BROADCAST_RECIPIENT if packet.recipient_id else True
     is_for_us = is_broadcast or (packet.recipient_id_str == client.my_peer_id)
@@ -183,6 +187,13 @@ async def handle_message(client: "BitchatClient", packet: BitchatPacket, raw_dat
             message = parse_bitchat_message_payload(unpadded)
         else:
             message = parse_bitchat_message_payload(packet.payload)
+            
+        # Update peer nickname from message sender if available
+        if message and hasattr(message, 'sender') and message.sender:
+            if packet.sender_id_str not in client.peers:
+                client.peers[packet.sender_id_str] = Peer()
+            client.peers[packet.sender_id_str].nickname = message.sender
+            
         # Check for duplicates using both bloom filter and set
         if message.id not in client.processed_messages:
             # Add to bloom filter and set
@@ -210,7 +221,8 @@ async def handle_message(client: "BitchatClient", packet: BitchatPacket, raw_dat
 
 async def display_message(client: "BitchatClient", message: BitchatMessage, packet: BitchatPacket, is_private: bool):
     """Display a message in the terminal"""
-    sender_nick = client.peers.get(packet.sender_id_str, Peer()).nickname or packet.sender_id_str
+    # Get sender nickname from message first, then peers dictionary, finally fallback to packet sender ID
+    sender_nick = message.sender or client.peers.get(packet.sender_id_str, Peer()).nickname or packet.sender_id_str
     
     # Track discovered channels
     if message.channel:
@@ -713,4 +725,3 @@ __all__ = [
     "handle_channel_announce",
     "handle_noise_identity_announce",
 ]
-

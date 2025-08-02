@@ -35,9 +35,12 @@ async def handle_user_input(client: "BitchatClient", line: str):
             await client.send_packet(leave_packet)
             await asyncio.sleep(0.1)  # Give time for the packet to send
         
+    try:
         await client.save_app_state()
-        client.running = False
-        return
+    except Exception as e:
+        debug_println(f"[ERROR] Failed to save app state: {e}")
+    client.running = False
+    return
     
     if line.startswith("/name "):
         new_name = line[6:].strip()
@@ -237,4 +240,3 @@ async def handle_user_input(client: "BitchatClient", line: str):
 
 
 __all__ = ["handle_user_input"]
-

@@ -100,6 +100,7 @@ class BitchatMessage:
     channel: Optional[str]
     is_encrypted: bool
     encrypted_content: Optional[bytes]
+    sender: str = ""
 
 @dataclass
 class DeliveryAck:
@@ -331,7 +332,7 @@ def parse_bitchat_message_payload(data: bytes) -> BitchatMessage:
         channel_len = data[offset]; offset += 1
         channel = data[offset:offset+channel_len].decode('utf-8')
 
-    return BitchatMessage(id_str, content, channel, is_encrypted, encrypted_content)
+    return BitchatMessage(id_str, content, channel, is_encrypted, encrypted_content, sender)
 
 def create_bitchat_packet(sender_id: str, msg_type: MessageType, payload: bytes) -> bytes:
     """Create a BitChat packet"""
