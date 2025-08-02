@@ -4,16 +4,6 @@ A Python implementation of the BitChat decentralized, peer-to-peer, encrypted ch
 
 This project is a rewrite of the original Rust-based [bitchat-terminal](https://github.com/ShilohEye/bitchat-terminal).
 
-## Table of Contents
-* [Installation](#installation)
-* [Usage](#usage)
-  * [Simple Start](#simple-start)
-  * [CLI Startup Options](#cli-startup-options)
-  * [BitChat Commands](#bitchat-commands)
-* [Clone, Develop and Build](#clone-develop-and-build)
-  * [Setup Environment](#setup-environment)
-  * [Build](#build-sdist-and-wheel)
-
 ## Installation
 
 Install the required dependencies using pip:
