@@ -223,7 +223,15 @@ async def display_message(client: "BitchatClient", message: BitchatMessage, pack
     """Display a message in the terminal"""
     # Get sender nickname from message first, then peers dictionary, finally fallback to packet sender ID
     sender_nick = message.sender or client.peers.get(packet.sender_id_str, Peer()).nickname or packet.sender_id_str
-    
+
+    # If this is a channel message, only display if user is in the channel
+    if message.channel and message.channel not in client.chat_context.active_channels:
+        # Still track discovered channels, but do not display
+        client.discovered_channels.add(message.channel)
+        if message.is_encrypted:
+            client.password_protected_channels.add(message.channel)
+        return
+
     # Track discovered channels
     if message.channel:
         client.discovered_channels.add(message.channel)
