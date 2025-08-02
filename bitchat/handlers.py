@@ -27,8 +27,10 @@ from .protocol import (
     create_bitchat_packet_with_signature,
     should_send_ack,
     unpad_message,
+    COVER_TRAFFIC_PREFIX,
 )
 from .terminal_ux import format_message_display, PrivateDM
+from .encryption import NoiseError
 
 if TYPE_CHECKING:
     from .client import BitchatClient
