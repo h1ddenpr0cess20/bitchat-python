@@ -28,7 +28,7 @@ from .protocol import (
     should_send_ack,
     unpad_message,
 )
-from .terminal_ux import format_message_display, PrivateDM
+from .terminal_ux import format_message_display, PrivateDM, Channel
 
 if TYPE_CHECKING:
     from .client import BitchatClient
@@ -528,12 +528,22 @@ async def handle_leave(client: "BitchatClient", packet: BitchatPacket):
         # Channel leave
         channel = payload_str
         sender_nick = client.peers.get(packet.sender_id_str, Peer()).nickname or packet.sender_id_str
-        
-        if isinstance(client.chat_context.current_mode, Channel) and \
-           client.chat_context.current_mode.name == channel:
-            print(f"\r\033[K\033[90m« {sender_nick} left {channel}\033[0m\n> ", end='', flush=True)
-        
-        debug_println(f"[<-- RECV] {sender_nick} left channel {channel}")
+
+        if channel in client.chat_context.active_channels:
+            if (
+                isinstance(client.chat_context.current_mode, Channel)
+                and client.chat_context.current_mode.name == channel
+            ):
+                print(
+                    f"\r\033[K\033[90m« {sender_nick} left {channel}\033[0m\n> ",
+                    end='',
+                    flush=True,
+                )
+            debug_println(f"[<-- RECV] {sender_nick} left channel {channel}")
+        else:
+            debug_println(
+                f"[<-- RECV] {sender_nick} left unjoined channel {channel}, ignoring"
+            )
     else:
         # Peer disconnect
         disconnected_peer = client.peers.pop(packet.sender_id_str, None)
