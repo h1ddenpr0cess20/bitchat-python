@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Command-line entry point for BitChat."""
+"""Main entry point for BitChat package execution."""
 import asyncio
-from bitchat.client import main
+from .client import main
 
 if __name__ == "__main__":
     try:

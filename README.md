@@ -2,35 +2,35 @@
 
 A Python implementation of the BitChat decentralized, peer-to-peer, encrypted chat application over BLE.
 
-*This project is a rewrite of the [original Rust-based `bitchat-terminal`](https://github.com/ShilohEye/bitchat-terminal).*
+This project is a rewrite of the original Rust-based [bitchat-terminal](https://github.com/ShilohEye/bitchat-terminal).
 
-## Table of contents
-* [Installation](#installation)
-* [Usage](#usage)
-  * [Simple start](#simple-start)
-  * [CLI startup options](#cli-startup-args)
-  * [BitChat Commands](#bitchat-commands)
-* [Clone, Develop and Build](#clone-develop-and-build)
-  * [Setup environment](#clone-and-setup-editable-environment-using-uv)
-  * [Build](#build-sdist-and-wheel)
+## Installation
 
-
+Install the required dependencies using pip:
+```bash
+pip install -r requirements.txt
+```
 
 ## Usage
 
-### Simple start
-```Shell
-python3 bitchat.py
+### Running BitChat
+You can run BitChat in one of two ways:
+
+1. Using the module command (recommended):
+```bash
+python -m bitchat
 ```
 
-
+2. Direct execution:
+```bash
+python3 bitchat.py
+```
 
 ### BitChat Commands
 
 This section details the various commands available within BitChat.
-```shell
-General Commands
 
+#### General Commands
 * `/help`               : Show this help menu
 * `/h`                  : Alias for /help
 * `/me`                 : Get your Nickname and peer_id
@@ -38,46 +38,34 @@ General Commands
 * `/status`             : Show connection info
 * `/clear`              : Clear the screen
 * `/exit`               : Quit BitChat
-*  `/q`                 : Alias for /exit
+* `/q`                  : Alias for /exit
 
-
-Navigation Commands
-
+#### Navigation Commands
 * `1-9`                 : Quick switch to conversation
 * `/list`               : Show all conversations
 * `/switch`             : Interactive conversation switcher
 * `/public`             : Go to public chat
 
-
-Messaging Commands
-
+#### Messaging Commands
 (Type normally to send in current mode)
-
 * `/dm <name>`          : Start private conversation
 * `/dm <name> <msg>`    : Send quick private message
 * `/reply`              : Reply to last private message
 
-
-Channel Commands
-
+#### Channel Commands
 * `/j #channel`               : Join or create a channel
 * `/j #channel <password>`    : Join with password
 * `/leave`                    : Leave current channel
 * `/pass <pwd>`               : Set channel password (owner only)
 * `/transfer @user`           : Transfer ownership (owner only)
 
-
-Discovery Commands
-
+#### Discovery Commands
 * `/channels`                 : List all discovered channels
-* `/online`                   : Show who`s online
+* `/online`                   : Show who's online
 * `/w`                        : Alias for /online
 
-
-Privacy & Security Commands
-
+#### Privacy & Security Commands
 * `/block @user`       : Block a user
 * `/block`             : List blocked users
 * `/unblock @user`     : Unblock a user
-```
 
